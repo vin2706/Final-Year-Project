@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Recommender</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>AI-Enhanced Personalized Recipe Recommender</h1>
+    <form action="/recommend" method="POST">
+        <label for="user_input">Enter your ingredients:</label>
+        <input type="text" id="user_input" name="user_input" required>
+        <input type="submit" value="Get Recipe Recommendations">
+    </form>
+    {% if recipes %}
+    <h2>Recommended Recipes:</h2>
+    <ul>
+        {% for recipe in recipes %}
+        <li>{{ recipe.title }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>
+
