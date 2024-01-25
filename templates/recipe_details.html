@@ -15,6 +15,14 @@
         <p>Cooking Time: {{ recipe_details['cookingMinutes'] }} minutes</p>
         <p>Likes: {{ recipe_details['aggregateLikes'] }}</p>
         
+        <!-- Display Ingredients -->
+        <h3>Ingredients:</h3>
+        <ul>
+            {% for ingredient in ingredients_with_quantities %}
+                <li>{{ ingredient }}</li>
+            {% endfor %}
+        </ul>
+        <!-- Display Instructions -->
         <h3>Instructions:</h3>
         <ol>
             {% for step in instructions %}
@@ -27,3 +35,4 @@
     <!-- Add your footer or any other necessary body content here -->
 </body>
 </html>
+

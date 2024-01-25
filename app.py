@@ -6,10 +6,8 @@ from urllib.parse import quote
 
 app = Flask(__name__)
 
-# Replace 'YOUR_RAPIDAPI_KEY' with your actual RapidAPI key
 RAPIDAPI_KEY = '61c1af29aemsh3760981ad1bf8a6p1ec6b4jsna57898205928'
 
-# Define routes
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -18,7 +16,7 @@ def home():
 
 @app.route('/recommend', methods=['POST'])
 def recommend_recipe():
-    user_input = request.form['user_input']  # Get user input here
+    user_input = request.form['user_input']  
 
     conn = http.client.HTTPSConnection("spoonacular-recipe-food-nutrition-v1.p.rapidapi.com")
 
@@ -27,7 +25,6 @@ def recommend_recipe():
         'X-RapidAPI-Host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
     }
 
-    # Construct the API request URL using user input
     api_request_url = f"/recipes/complexSearch?query={quote(user_input)}&number=5"
     
     conn.request("GET", api_request_url, headers=headers)
@@ -72,9 +69,9 @@ def recipe_details(recipe_id):
     data_details = res_details.read()
     response_data_details = data_details.decode("utf-8")
 
-    recipe_details = {}  
-    error_message = None  
-    
+    recipe_details = {}
+    error_message = None
+
     try:
         response_json_details = json.loads(response_data_details)
         recipe_details = response_json_details
@@ -92,14 +89,21 @@ def recipe_details(recipe_id):
     instructions = []
     try:
         response_json_instructions = json.loads(response_data_instructions)
-        if response_json_instructions:
-            instructions = response_json_instructions[0].get('steps', [])
+        if response_json_instructions and 'steps' in response_json_instructions[0]:
+            instructions = response_json_instructions[0]['steps']
     except Exception as e:
         error_message = f"Error parsing instructions API response: {e}"
         return render_template('error.html', error_message=error_message)
 
-    return render_template('recipe_details.html', recipe_details=recipe_details, instructions=instructions)
+        # Extract ingredients with quantities from the extendedIngredients field
+    ingredients_with_quantities = []
+    if 'extendedIngredients' in recipe_details:
+        for ingredient in recipe_details['extendedIngredients']:
+            name = ingredient.get('original', ingredient.get('name'))
+            if name:
+                ingredients_with_quantities.append(name)
 
+    return render_template('recipe_details.html', recipe_details=recipe_details, instructions=instructions, ingredients_with_quantities=ingredients_with_quantities)
 
 if __name__ == '__main__':
     app.run(debug=True)

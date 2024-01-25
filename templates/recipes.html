@@ -6,15 +6,6 @@
               <img src="{{recipe['image']}}" class="align-self-center mr-3" alt="..." width="15%" height="15%">
               <div class="media-body">
                   <h5 class="mt-0 mb-1"><a href="{{ url_for('recipe_details', recipe_id=recipe['id']) }}">{{ recipe['title'] }}</a></h5>
-                  {% if 'likes' not in recipe %}
-                      How many minutes for preparation? {{recipe['preparationMinutes']}} <br>
-                      How many minutes for cooking? {{recipe['cookingMinutes']}}  <br>
-                      How many likes has this recipe? {{recipe['aggregateLikes']}}  <br>
-                  {% else %}
-                      How many your ingredients? {{recipe['usedIngredientCount']}} <br>
-                      How many missed ingredients? {{recipe['missedIngredientCount']}}  <br>
-                      How many likes has this recipe? {{recipe['likes']}}  <br>
-                  {% endif %}
               </div>
           </li> <br>
       {% endfor %}

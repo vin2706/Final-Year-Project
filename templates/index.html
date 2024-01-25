@@ -6,10 +6,10 @@
 </head>
 <body>
     <h1>AI-Enhanced Personalized Recipe Recommender</h1>
-    <form action="/recommend" method="POST">
+    <form action="/recommend" method="POST" class="search-form">
         <label for="user_input">Enter your ingredients:</label>
         <input type="text" id="user_input" name="user_input" required>
-        <input type="submit" value="Get Recipe Recommendations">
+        <button type="submit">Get Recipe Recommendations</button>
     </form>
     {% if recipes %}
     <h2>Recommended Recipes:</h2>
