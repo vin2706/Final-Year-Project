@@ -33,13 +33,11 @@ def recommend_recipe():
     res = conn.getresponse()
     data = res.read()
 
-    # Parse the response data (JSON)
     response_data = data.decode("utf-8")
     recipes = []  # Initialize an empty list to store recipe details
     error_message = None  # Initialize error_message as None
     
     try:
-        # Attempt to parse JSON data
         response_json = json.loads(response_data)
         if 'results' in response_json:
             recipes = response_json['results']
@@ -96,7 +94,7 @@ def recipe_details(recipe_id):
         error_message = f"Error parsing instructions API response: {e}"
         return render_template('error.html', error_message=error_message)
 
-        # Extract ingredients with quantities from the extendedIngredients field
+    # Extract ingredients with quantities from the extendedIngredients field
     ingredients_with_quantities = []
     if 'extendedIngredients' in recipe_details:
         for ingredient in recipe_details['extendedIngredients']:
@@ -116,7 +114,6 @@ def random_recipe():
         'X-RapidAPI-Host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com"
     }
 
-    # Construct the API request URL for a random recipe
     api_request_url = "/recipes/random"
 
     conn.request("GET", api_request_url, headers=headers)
