@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details</title>
+    <!-- Add your stylesheets or any other necessary head content here -->
+</head>
+<body>
+    <h2 style="text-align: center">Recipe Details</h2>
+    <div style="margin-left:35%;">
+        <img src="{{ recipe_details['image'] }}" alt="Recipe Image" width="30%" height="30%">
+        <h3>{{ recipe_details['title'] }}</h3>
+        <p>Preparation Time: {{ recipe_details['preparationMinutes'] }} minutes</p>
+        <p>Cooking Time: {{ recipe_details['cookingMinutes'] }} minutes</p>
+        <p>Likes: {{ recipe_details['aggregateLikes'] }}</p>
+        
+        <h3>Instructions:</h3>
+        <ol>
+            {% for step in instructions %}
+                <li>{{ step['step'] }}</li>
+            {% endfor %}
+        </ol>
+        
+        <!-- Add more details or content as needed -->
+    </div>
+    <!-- Add your footer or any other necessary body content here -->
+</body>
+</html>
