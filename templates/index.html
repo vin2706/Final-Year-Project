@@ -6,20 +6,24 @@
 </head>
 <body>
     <h1>AI-Enhanced Personalized Recipe Recommender</h1>
-    <form action="/recommend" method="POST" class="search-form">
+    <form action="/recommend" method="POST">
         <label for="user_input">Enter your ingredients:</label>
         <input type="text" id="user_input" name="user_input" required>
-        <button type="submit">Get Recipe Recommendations</button>
+        <input type="submit" value="Get Recipe Recommendations">
     </form>
+
+    <!-- Button to get a random recipe -->
+    <form action="/random_recipe" method="GET">
+        <input type="submit" value="Get Random Recipe">
+    </form>
+
     {% if recipes %}
     <h2>Recommended Recipes:</h2>
     <ul>
         {% for recipe in recipes %}
-        <li>{{ recipe }}</li>
+        <li>{{ recipe.title }}</li>
         {% endfor %}
     </ul>
     {% endif %}
-
 </body>
 </html>
-

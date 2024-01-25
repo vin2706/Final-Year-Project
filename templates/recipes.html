@@ -1,16 +1,47 @@
-<h2 style="text-align: center"> <a href="/" style="text-decoration: none; color:red"> Recipes for you: </a></h2>
-<div style="margin-left:35%;">
-  <ul class="list-unstyled">
-      {% for recipe in recipes %}
-          <li class="media">
-              <img src="{{recipe['image']}}" class="align-self-center mr-3" alt="..." width="15%" height="15%">
-              <div class="media-body">
-                  <h5 class="mt-0 mb-1"><a href="{{ url_for('recipe_details', recipe_id=recipe['id']) }}">{{ recipe['title'] }}</a></h5>
-              </div>
-          </li> <br>
-      {% endfor %}
-  </ul>
-</div >
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipes Search</title>
+    <!-- Add your stylesheets or any other necessary head content here -->
+    <style>
+        /* Add custom styles here if needed */
+        .recipe-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
+        .recipe-image {
+            width: 30%;
+            height: auto;
+            margin-right: 20px;
+        }
 
+        .recipe-details {
+            flex: 1;
+        }
 
+        .recipe-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center"><a href="/" style="text-decoration: none; color:#3498db">Recipes for you:</a></h2>
+    <div style="margin-left:35%;">
+        {% for recipe in recipes %}
+            <div class="recipe-container">
+                <img src="{{ recipe['image'] }}" class="recipe-image" alt="Recipe Image">
+                <div class="recipe-details">
+                    <h5 class="recipe-title"><a href="{{ url_for('recipe_details', recipe_id=recipe['id']) }}">{{ recipe['title'] }}</a></h5>
+                    <!-- Add more details as needed -->
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <!-- Add your footer or any other necessary body content here -->
+</body>
+</html>
