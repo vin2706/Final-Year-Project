@@ -7,6 +7,8 @@ from flask import redirect, url_for
 
 app = Flask(__name__)
 
+
+app.secret_key = 'b_5#y2L"F4Q8z\n\xec]/'
 RAPIDAPI_KEY = '61c1af29aemsh3760981ad1bf8a6p1ec6b4jsna57898205928'
 
 @app.route('/')
@@ -179,6 +181,109 @@ def random_recipe():
 
         
     return render_template('recipe_details.html', recipe_details=recipe_details, instructions=instructions, ingredients_with_quantities=ingredients_with_quantities)
+
+import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, session
+
+# Initialize SQLite database
+conn = sqlite3.connect('user_profiles.db')
+c = conn.cursor()
+
+# Create users table if not exists
+c.execute('''CREATE TABLE IF NOT EXISTS users (
+             id INTEGER PRIMARY KEY,
+             username TEXT NOT NULL,
+             password TEXT NOT NULL,
+             email TEXT NOT NULL,
+             allergens TEXT
+             )''')
+conn.commit()
+
+# Create saved recipes table if not exists
+c.execute('''CREATE TABLE IF NOT EXISTS saved_recipes (
+             id INTEGER PRIMARY KEY,
+             user_id INTEGER NOT NULL,
+             recipe_name TEXT NOT NULL,
+             FOREIGN KEY (user_id) REFERENCES users (id)
+             )''')
+conn.commit()
+conn.close()
+
+# Routes for login, registration, profile, and recipe management
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # Authenticate user
+        if authenticate_user(username, password):
+            session['username'] = username
+            return redirect(url_for('profile'))
+        else:
+            return render_template('login.html', message='Invalid username or password')
+    return render_template('login.html', message='')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        allergens = request.form['allergens']
+        # Register new user
+        if register_user(username, password, email, allergens):
+            session['username'] = username
+            return redirect(url_for('profile'))
+        else:
+            return render_template('register.html', message='Username or email already exists')
+    return render_template('register.html', message='')
+
+@app.route('/profile')
+def profile():
+    if 'username' in session:
+        username = session['username']
+        saved_recipes = get_saved_recipes(username)
+        return render_template('profile.html', username=username, saved_recipes=saved_recipes)
+    return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('home'))
+
+# Function to authenticate user
+def authenticate_user(username, password):
+    conn = sqlite3.connect('user_profiles.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = c.fetchone()
+    conn.close()
+    return True if user else False
+
+# Function to register new user
+def register_user(username, password, email, allergens):
+    conn = sqlite3.connect('user_profiles.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, email))
+    user = c.fetchone()
+    if user:
+        conn.close()
+        return False
+    else:
+        c.execute("INSERT INTO users (username, password, email, allergens) VALUES (?, ?, ?, ?)",
+                  (username, password, email, allergens))
+        conn.commit()
+        conn.close()
+        return True
+
+# Function to get saved recipes for a user
+def get_saved_recipes(username):
+    conn = sqlite3.connect('user_profiles.db')
+    c = conn.cursor()
+    c.execute("SELECT recipe_name FROM saved_recipes WHERE user_id = (SELECT id FROM users WHERE username = ?)", (username,))
+    saved_recipes = c.fetchall()
+    conn.close()
+    return saved_recipes
 
 if __name__ == '__main__':
     app.run(debug=True)
