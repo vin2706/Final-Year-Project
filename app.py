@@ -13,9 +13,11 @@ RAPIDAPI_KEY = '61c1af29aemsh3760981ad1bf8a6p1ec6b4jsna57898205928'
 
 @app.route('/')
 def home():
-    return render_template('index.html')
-
-    
+    # Check if the user is logged in
+    if 'username' in session:
+        return render_template('index.html', username=session['username'])
+    else:
+        return render_template('index.html')
 
 @app.route('/recommend', methods=['POST'])
 def recommend_recipe():

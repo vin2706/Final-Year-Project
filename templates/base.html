@@ -11,9 +11,14 @@
         <h1>AI-Enhanced Personalized Recipe Recommender</h1>
         <nav>
             <a href="/">Home</a> | 
-            <a href="/login">Login</a> |
-            <a href="/register">Register</a>
-
+            <!-- home.html -->
+            {% if 'username' not in session %}
+            <a href="{{ url_for('login') }}">Login</a> |
+            <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+            {% if 'username'  in session %}
+            <a href="/logout">Logout</a> 
+            {% endif %}
         </nav>
     </div>
     {% block body %}{% endblock %}
