@@ -17,6 +17,7 @@
             <a href="{{ url_for('register') }}">Register</a>
             {% endif %}
             {% if 'username'  in session %}
+            <a href="/profile">Profile</a> |
             <a href="/logout">Logout</a> 
             {% endif %}
         </nav>

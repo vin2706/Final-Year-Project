@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Recipe</title>
+    <!-- Add your stylesheets or any other necessary head content here -->
+</head>
+<body>
+    <h2>Save Recipe</h2>
+    <form action="/save_user_recipe" method="POST">
+        <label for="recipe_title">Recipe Name:</label><br>
+        <input type="hidden" name="recipe_title" value="{{ recipe_details['title'] }}">
+        <input type="submit" value="Save Recipe">
+    </form>
+</body>
+</html>

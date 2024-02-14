@@ -150,6 +150,7 @@ def random_recipe():
     data_details = res_details.read()
     response_data_details = data_details.decode("utf-8")
 
+
     recipe_details = {}
     try:
         response_json_details = json.loads(response_data_details)
@@ -205,11 +206,37 @@ conn.commit()
 c.execute('''CREATE TABLE IF NOT EXISTS saved_recipes (
              id INTEGER PRIMARY KEY,
              user_id INTEGER NOT NULL,
-             recipe_name TEXT NOT NULL,
+             recipe_title TEXT NOT NULL,  
              FOREIGN KEY (user_id) REFERENCES users (id)
              )''')
 conn.commit()
 conn.close()
+
+
+import sqlite3
+
+# Connect to the SQLite database
+conn = sqlite3.connect('user_profiles.db')
+c = conn.cursor()
+
+# Fetch all rows from the saved_recipes table
+c.execute("SELECT * FROM saved_recipes")
+rows = c.fetchall()
+
+# Print the column names
+print("ID\tUser ID\tRecipe Name")
+print("---------------------------------")
+
+# Print the content of the table
+for row in rows:
+    recipe_id, user_id, recipe_name = row
+    print(f"{recipe_id}\t{user_id}\t{recipe_name}")
+
+# Close the connection
+conn.close()
+
+
+
 
 # Routes for login, registration, profile, and recipe management
 @app.route('/login', methods=['GET', 'POST'])
@@ -244,7 +271,7 @@ def register():
 def profile():
     if 'username' in session:
         username = session['username']
-        saved_recipes = get_saved_recipes(username)
+        saved_recipes = get_saved_recipes(username)  
         return render_template('profile.html', username=username, saved_recipes=saved_recipes)
     return redirect(url_for('login'))
 
@@ -278,14 +305,62 @@ def register_user(username, password, email, allergens):
         conn.close()
         return True
 
+
+# Function to save user recipe to the database
+def save_user_recipe_to_database(user_id, recipe_title):
+    conn = sqlite3.connect('user_profiles.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO saved_recipes (user_id, recipe_title) VALUES (?, ?)", (user_id, recipe_title))
+    conn.commit()
+    conn.close()
+
 # Function to get saved recipes for a user
 def get_saved_recipes(username):
     conn = sqlite3.connect('user_profiles.db')
     c = conn.cursor()
-    c.execute("SELECT recipe_name FROM saved_recipes WHERE user_id = (SELECT id FROM users WHERE username = ?)", (username,))
+    c.execute("SELECT id FROM users WHERE username = ?", (username,))
+    user_id = c.fetchone()[0]
+    c.execute("SELECT recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
     saved_recipes = c.fetchall()
     conn.close()
     return saved_recipes
+
+import logging
+
+@app.route('/save_user_recipe', methods=['POST'])
+def save_recipe():
+    if 'username' in session:
+        username = session['username']
+        recipe_title = request.form.get('recipe_title')
+        
+        if not recipe_title:
+            return render_template('error.html', error_message="Recipe name cannot be empty.")
+        
+        try:
+            # Get user ID from the database using the username
+            conn = sqlite3.connect('user_profiles.db')
+            c = conn.cursor()
+            c.execute("SELECT id FROM users WHERE username = ?", (username,))
+            user_id = c.fetchone()[0]
+            
+            # Save recipe to the database
+            save_user_recipe_to_database(user_id, recipe_title)
+            
+            # Redirect to the profile page after saving
+            return redirect(url_for('profile'))
+        except sqlite3.IntegrityError as e:
+            logging.error(f"IntegrityError occurred: {str(e)}")
+            conn.rollback()  # Rollback the transaction in case of an integrity error
+            return render_template('error.html', error_message="Error saving recipe. Please try again.")
+        except Exception as e:
+            logging.error(f"Database error occurred: {str(e)}")
+            conn.rollback()  # Rollback the transaction in case of any other error
+            return render_template('error.html', error_message="An error occurred while saving the recipe.")
+        finally:
+            conn.close()
+    else:
+        return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

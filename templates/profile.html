@@ -8,10 +8,11 @@
     <h3>Saved Recipes:</h3>
     <ul>
         {% for recipe in saved_recipes %}
-        <li>{{ recipe.recipe_name }}</li>
+        <li>{{ recipe.recipe_title }}</li>
         {% endfor %}
     </ul>
-    <a href="/">Home</a>
+
+    <a href="/">Home</a> |
     <a href="/logout">Logout</a>
 </body>
 </html>

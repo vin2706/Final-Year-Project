@@ -11,6 +11,14 @@
     <div style="margin-left:35%;">
         <img src="{{ recipe_details['image'] }}" alt="Recipe Image" width="30%" height="30%">
         <h3>{{ recipe_details['title'] }}</h3>
+
+        <!-- Save Recipe Button -->
+        <form action="/save_user_recipe" method="post">
+            <input type="hidden" name="recipe_id" value="{{ recipe_details['id'] }}">
+            <input type="hidden" name="recipe_title" value="{{ recipe_details['title'] }}">
+            <input type="submit" value="Save Recipe">
+        </form>
+        
         <p>Preparation Time: {{ recipe_details['preparationMinutes'] }} minutes</p>
         <p>Cooking Time: {{ recipe_details['cookingMinutes'] }} minutes</p>
         <p>Likes: {{ recipe_details['aggregateLikes'] }}</p>
@@ -35,4 +43,3 @@
     <!-- Add your footer or any other necessary body content here -->
 </body>
 </html>
-
