@@ -202,35 +202,29 @@ c.execute('''CREATE TABLE IF NOT EXISTS users (
              )''')
 conn.commit()
 
-# Create saved recipes table if not exists
+conn = sqlite3.connect('saved_recipes.db')
+c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS saved_recipes (
              id INTEGER PRIMARY KEY,
              user_id INTEGER NOT NULL,
-             recipe_title TEXT NOT NULL,  
+             recipe_title TEXT NOT NULL,
+             recipe_id INTEGER NOT NULL,
              FOREIGN KEY (user_id) REFERENCES users (id)
              )''')
 conn.commit()
-conn.close()
-
-
-import sqlite3
-
-# Connect to the SQLite database
-conn = sqlite3.connect('user_profiles.db')
-c = conn.cursor()
 
 # Fetch all rows from the saved_recipes table
 c.execute("SELECT * FROM saved_recipes")
 rows = c.fetchall()
 
 # Print the column names
-print("ID\tUser ID\tRecipe Name")
+print("ID\tUser ID\tRecipe title")
 print("---------------------------------")
 
 # Print the content of the table
 for row in rows:
-    recipe_id, user_id, recipe_name = row
-    print(f"{recipe_id}\t{user_id}\t{recipe_name}")
+    recipe_id, user_id, recipe_title = row
+    print(f"{recipe_id}\t{user_id}\t{recipe_title}")
 
 # Close the connection
 conn.close()
@@ -267,13 +261,20 @@ def register():
             return render_template('register.html', message='Username or email already exists')
     return render_template('register.html', message='')
 
+from flask import render_template
+
 @app.route('/profile')
 def profile():
     if 'username' in session:
         username = session['username']
-        saved_recipes = get_saved_recipes(username)  
-        return render_template('profile.html', username=username, saved_recipes=saved_recipes)
+        user_id = get_user_id(username)  # Assuming you have implemented this function
+        if user_id is not None:
+            saved_recipes = get_saved_recipes(user_id)
+            return render_template('profile.html', username=username, saved_recipes=saved_recipes)
+        else:
+            return render_template('profile.html', username=username, saved_recipes=[])  # No recipes found for the user
     return redirect(url_for('login'))
+
 
 @app.route('/logout')
 def logout():
@@ -305,25 +306,44 @@ def register_user(username, password, email, allergens):
         conn.close()
         return True
 
+def get_user_id(username):
+    try:
+        conn = sqlite3.connect('user_profiles.db')
+        c = conn.cursor()
+        c.execute("SELECT id FROM users WHERE username = ?", (username,))
+        user_id = c.fetchone()
+        if user_id:
+            return user_id[0]  # Return the user ID
+        else:
+            return None  # Return None if the user is not found
+    except sqlite3.Error as e:
+        print(f"Database error occurred: {e}")
+        return None
+    finally:
+        conn.close()
+
 
 # Function to save user recipe to the database
-def save_user_recipe_to_database(user_id, recipe_title):
-    conn = sqlite3.connect('user_profiles.db')
+def save_user_recipe_to_database(user_id, recipe_title,recipe_id):
+    conn = sqlite3.connect('saved_recipes.db')
     c = conn.cursor()
-    c.execute("INSERT INTO saved_recipes (user_id, recipe_title) VALUES (?, ?)", (user_id, recipe_title))
+    c.execute("INSERT INTO saved_recipes (user_id, recipe_title, recipe_id) VALUES (?, ?, ?)", (user_id, recipe_title, recipe_id))
     conn.commit()
     conn.close()
 
 # Function to get saved recipes for a user
-def get_saved_recipes(username):
-    conn = sqlite3.connect('user_profiles.db')
-    c = conn.cursor()
-    c.execute("SELECT id FROM users WHERE username = ?", (username,))
-    user_id = c.fetchone()[0]
-    c.execute("SELECT recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
-    saved_recipes = c.fetchall()
-    conn.close()
-    return saved_recipes
+def get_saved_recipes(user_id):
+    try:
+        conn = sqlite3.connect('saved_recipes.db')
+        c = conn.cursor()
+        c.execute("SELECT recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
+        saved_recipes = c.fetchall()
+        return saved_recipes
+    except sqlite3.Error as e:
+        print(f"Database error occurred: {e}")
+        return []
+    finally:
+        conn.close()
 
 import logging
 
@@ -344,7 +364,7 @@ def save_recipe():
             user_id = c.fetchone()[0]
             
             # Save recipe to the database
-            save_user_recipe_to_database(user_id, recipe_title)
+            save_user_recipe_to_database(user_id, recipe_title, recipe_id)
             
             # Redirect to the profile page after saving
             return redirect(url_for('profile'))
@@ -360,7 +380,6 @@ def save_recipe():
             conn.close()
     else:
         return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
     app.run(debug=True)
