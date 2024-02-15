@@ -8,7 +8,7 @@
     <h3>Saved Recipes:</h3>
     <ul>
         {% for recipe in saved_recipes %}
-        <li>{{ recipe }}</li>
+        <li><a href="{{ url_for('recipe_details', recipe_id=recipe[0]) }}">{{ recipe[1] }}</a></li>
         {% endfor %}
     </ul>
 
@@ -16,4 +16,3 @@
     <a href="/logout">Logout</a>
 </body>
 </html>
-

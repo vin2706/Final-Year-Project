@@ -218,18 +218,20 @@ c.execute("SELECT * FROM saved_recipes")
 rows = c.fetchall()
 
 # Print the column names
-print("ID\tUser ID\tRecipe title")
+print("ID\tUser ID\tRecipe title\tRecipe_ID")
 print("---------------------------------")
 
 # Print the content of the table
 for row in rows:
-    recipe_id, user_id, recipe_title = row
-    print(f"{recipe_id}\t{user_id}\t{recipe_title}")
+    recipe_id, user_id, recipe_title, recipe_id = row
+    print(f"{recipe_id}\t{user_id}\t{recipe_title}\t{recipe_id}")
 
 # Close the connection
 conn.close()
 
 
+# Close the connection
+conn.close()
 
 
 # Routes for login, registration, profile, and recipe management
@@ -324,19 +326,18 @@ def get_user_id(username):
 
 
 # Function to save user recipe to the database
-def save_user_recipe_to_database(user_id, recipe_title,recipe_id):
+def save_user_recipe_to_database(user_id, recipe_title, recipe_id):
     conn = sqlite3.connect('saved_recipes.db')
     c = conn.cursor()
     c.execute("INSERT INTO saved_recipes (user_id, recipe_title, recipe_id) VALUES (?, ?, ?)", (user_id, recipe_title, recipe_id))
     conn.commit()
     conn.close()
 
-# Function to get saved recipes for a user
 def get_saved_recipes(user_id):
     try:
         conn = sqlite3.connect('saved_recipes.db')
         c = conn.cursor()
-        c.execute("SELECT recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
+        c.execute("SELECT id, recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
         saved_recipes = c.fetchall()
         return saved_recipes
     except sqlite3.Error as e:
@@ -345,6 +346,7 @@ def get_saved_recipes(user_id):
     finally:
         conn.close()
 
+
 import logging
 
 @app.route('/save_user_recipe', methods=['POST'])
@@ -352,7 +354,9 @@ def save_recipe():
     if 'username' in session:
         username = session['username']
         recipe_title = request.form.get('recipe_title')
-        
+        recipe_id = request.form.get('recipe_id')
+
+
         if not recipe_title:
             return render_template('error.html', error_message="Recipe name cannot be empty.")
         
