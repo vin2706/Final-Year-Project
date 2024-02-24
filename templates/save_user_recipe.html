@@ -10,6 +10,7 @@
     <h2>Save Recipe</h2>
     <form action="/save_user_recipe" method="POST">
         <label for="recipe_title">Recipe Name:</label><br>
+        <input type="hidden" name="recipe_id" value="{{ recipe_details['recipe_id'] }}">
         <input type="hidden" name="recipe_title" value="{{ recipe_details['title'] }}">
         <input type="submit" value="Save Recipe">
     </form>

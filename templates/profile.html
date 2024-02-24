@@ -8,9 +8,10 @@
     <h3>Saved Recipes:</h3>
     <ul>
         {% for recipe in saved_recipes %}
-        <li><a href="{{ url_for('recipe_details', recipe_id=recipe[0]) }}">{{ recipe[1] }}</a></li>
+        <li><a href="{{ url_for('recipe_details', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></li>
         {% endfor %}
     </ul>
+     
 
     <a href="/">Home</a> |
     <a href="/logout">Logout</a>

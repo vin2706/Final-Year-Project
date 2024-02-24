@@ -223,8 +223,8 @@ print("---------------------------------")
 
 # Print the content of the table
 for row in rows:
-    recipe_id, user_id, recipe_title, recipe_id = row
-    print(f"{recipe_id}\t{user_id}\t{recipe_title}\t{recipe_id}")
+    id, user_id, recipe_title, recipe_id = row
+    print(f"{id}\t{user_id}\t{recipe_title}\t{recipe_id}")
 
 # Close the connection
 conn.close()
@@ -337,14 +337,19 @@ def get_saved_recipes(user_id):
     try:
         conn = sqlite3.connect('saved_recipes.db')
         c = conn.cursor()
-        c.execute("SELECT id, recipe_title FROM saved_recipes WHERE user_id = ?", (user_id,))
-        saved_recipes = c.fetchall()
+        c.execute("SELECT recipe_title, recipe_id FROM saved_recipes WHERE user_id = ?", (user_id,))
+        rows = c.fetchall()
+
+        # Convert rows to a list of dictionaries
+        saved_recipes = [{'recipe_id': row[1], 'title': row[0]} for row in rows]
+        
         return saved_recipes
     except sqlite3.Error as e:
         print(f"Database error occurred: {e}")
         return []
     finally:
         conn.close()
+
 
 
 import logging
@@ -356,34 +361,29 @@ def save_recipe():
         recipe_title = request.form.get('recipe_title')
         recipe_id = request.form.get('recipe_id')
 
+        if not recipe_title or not recipe_id:
+            return render_template('error.html', error_message="Invalid recipe data.")
 
-        if not recipe_title:
-            return render_template('error.html', error_message="Recipe name cannot be empty.")
-        
         try:
             # Get user ID from the database using the username
-            conn = sqlite3.connect('user_profiles.db')
-            c = conn.cursor()
-            c.execute("SELECT id FROM users WHERE username = ?", (username,))
-            user_id = c.fetchone()[0]
-            
+            user_id = get_user_id(username)
+            if user_id is None:
+                return render_template('error.html', error_message="User not found.")
+
             # Save recipe to the database
             save_user_recipe_to_database(user_id, recipe_title, recipe_id)
-            
+
             # Redirect to the profile page after saving
             return redirect(url_for('profile'))
         except sqlite3.IntegrityError as e:
             logging.error(f"IntegrityError occurred: {str(e)}")
-            conn.rollback()  # Rollback the transaction in case of an integrity error
             return render_template('error.html', error_message="Error saving recipe. Please try again.")
         except Exception as e:
             logging.error(f"Database error occurred: {str(e)}")
-            conn.rollback()  # Rollback the transaction in case of any other error
             return render_template('error.html', error_message="An error occurred while saving the recipe.")
-        finally:
-            conn.close()
     else:
         return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
